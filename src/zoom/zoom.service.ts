@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Meeting } from '@prisma/client';
 import axios from 'axios';
 import { PrismaService } from 'src/prisma-utils/prisma.service';
 import { User } from 'src/types/user.type';
@@ -69,9 +70,14 @@ export class ZoomService {
 
   async createZoomMeeting(
     user: User,
-    meetingDetails: { topic: string; date: string; time: string },
+    meetingDetails: {
+      topic: string;
+      date: string;
+      time: string;
+      endTime: string;
+    },
   ) {
-    const { topic, date, time } = meetingDetails;
+    const { topic, date, time, endTime } = meetingDetails;
 
     // Format date and time to match Zoom's requirements
     const formattedDate = `${date}T${time}:00Z`; // Example: "2023-10-18T09:00:00Z"
@@ -91,9 +97,60 @@ export class ZoomService {
       },
     );
 
+    // find a user with its email to have an id
+    const foundUser = await this.prismaService.user.findUnique({
+      where: {
+        email: user.email,
+      },
+    });
+
+    if (!foundUser) {
+      throw new HttpException('User not found!', HttpStatus.BAD_REQUEST);
+    }
+
+    // save meeting in database with it's user
+    const savedMeeting = await this.prismaService.meeting.create({
+      data: {
+        date: date,
+        startTime: time,
+        endTime: endTime,
+        zoomUrl: response.data.join_url,
+        user: {
+          connect: {
+            id: foundUser.id,
+          },
+        },
+      },
+    });
+
     return {
+      id: savedMeeting.id,
+      host: foundUser,
       zoomMeetingURL: response.data.join_url,
       topic: response.data.topic,
     };
+  }
+
+  // method to get all the meetings from a user with their email
+  async getAllMeetingsForUser(email: string): Promise<Meeting[]> {
+    // find a user with its email to have an id
+    const foundUser = await this.prismaService.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!foundUser) {
+      throw new HttpException('User not found!', HttpStatus.BAD_REQUEST);
+    }
+
+    return this.prismaService.meeting.findMany({
+      where: {
+        userId: foundUser.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 }

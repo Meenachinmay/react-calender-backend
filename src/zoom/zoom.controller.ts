@@ -50,7 +50,8 @@ export class ZoomController {
   @UseGuards(AuthenticatedGuard)
   @Post('/create-meeting')
   async createZoomMeeting(
-    @Body() body: { topic: string; date: string; time: string },
+    @Body()
+    body: { topic: string; date: string; time: string; endTime: string },
     @Req() req: Request,
   ) {
     // Extract user from the request (assuming you've set it up with Passport or any other authentication library)
@@ -58,5 +59,13 @@ export class ZoomController {
 
     const meetingDetails = await this.zoomService.createZoomMeeting(user, body);
     return meetingDetails;
+  }
+
+  @UseGuards(AuthenticatedGuard)
+  @Get('/get-meetings')
+  async getAllMeetingsForUser(@Req() req: Request) {
+    const user = req.user as User;
+
+    return await this.zoomService.getAllMeetingsForUser(user.email);
   }
 }
