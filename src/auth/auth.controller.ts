@@ -8,12 +8,12 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { CreateUserDto } from 'src/dtos/create-user.dto';
 import { AuthService } from './auth.service';
 import {
   AuthenticatedGuard,
   LocalAuthGuard,
 } from './central-auth/__auth-guards__/Guards';
-import { CreateUserDto } from 'src/dtos/create-user.dto';
 
 @Controller('auth')
 export class AuthController {

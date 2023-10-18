@@ -9,7 +9,7 @@ export class SessionSerializer extends PassportSerializer {
     super();
   }
 
-  serializeUser(user: any, done: Function) {
+  serializeUser(user: User, done: Function) {
     done(null, user);
   }
 
