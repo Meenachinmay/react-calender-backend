@@ -35,13 +35,16 @@ export class ZoomController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    console.log(req.user);
     const data = req.user as User;
     const tokens = await this.zoomService.handleOAuthCode(code, data.email);
     if (!tokens) {
-      return res.status(401).send('Tokens from zoom not created');
+      return res.redirect(
+        `http://localhost:5173/zoom?error=Tokens from zoom not created`,
+      );
     }
-    return { message: 'Zoom integration successful!' }; // Modify as needed
+    return res.redirect(
+      `http://localhost:5173/zoom?message=Zoom integration is successful!`,
+    );
   }
 
   @UseGuards(AuthenticatedGuard)
