@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+
+  relationMode = "prisma"
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  password String
+  meetings Meeting[]
+  
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt   DateTime
+}
+
+model Meeting { 
+  id Int @id @default(autoincrement())
+  date String
+  startTime String
+  endTime String
+  zoomUrl String
+  isCompleted Boolean @default(false)
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
