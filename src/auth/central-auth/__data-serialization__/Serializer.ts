@@ -17,11 +17,26 @@ export class SessionSerializer extends PassportSerializer {
     if (!user || !user.email) {
       return done(null, false);
     }
+
     const userDb = await this.prismaService.user.findUnique({
       where: {
         email: user.email,
       },
+      include: {
+        meetings: true,
+      },
     });
-    return userDb ? done(null, userDb) : done(null, null);
+
+    type UserPreview = Omit<User, 'password'>;
+
+    const _user: UserPreview = {
+      id: user.id,
+      email: user.email,
+      meetings: user.meetings,
+      zoomAccessToken: user.zoomAccessToken,
+      zoomRefreshToken: user.zoomRefreshToken,
+    };
+
+    return userDb ? done(null, _user) : done(null, null);
   }
 }

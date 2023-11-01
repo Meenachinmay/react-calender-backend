@@ -31,7 +31,17 @@ export class AuthService {
     const isPasswordValid = await compareHash(password, user.password);
 
     if (isPasswordValid) {
-      return user;
+      type UserPreview = Omit<User, 'password'>;
+
+      const _user: UserPreview = {
+        id: user.id,
+        email: user.email,
+        meetings: user.meetings,
+        zoomAccessToken: user.zoomAccessToken,
+        zoomRefreshToken: user.zoomRefreshToken,
+      };
+
+      return _user;
     } else {
       throw new HttpException(
         'Invalid Crendentials (password is not valid)',

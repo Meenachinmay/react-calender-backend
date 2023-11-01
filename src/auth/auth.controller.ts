@@ -2,13 +2,13 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
   Post,
   Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/dtos/create-user.dto';
+import { User } from 'src/types/user.type';
 import { AuthService } from './auth.service';
 import {
   AuthenticatedGuard,
@@ -21,9 +21,19 @@ export class AuthController {
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  login(@Req() req, @Res() res): Promise<string> {
+  login(@Req() req, @Res() res): User {
     if (req.isAuthenticated()) {
-      return res.status(200).send('loggedin', HttpStatus.OK);
+      // Return user data as JSON object
+      return res.status(200).json({
+        status: 'loggedin',
+        user: req.user, // send the authenticated user data
+      });
+    } else {
+      // In case of failure, you can send a suitable response (optional)
+      return res.status(401).json({
+        status: 'error',
+        message: 'Authentication failed',
+      });
     }
   }
 
